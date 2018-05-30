@@ -3,6 +3,8 @@
  * Includes header files and Defines Constants 
  * ============================================================================== */
  #include <Servo.h>
+
+ #include "servoRotation.h" // for motion of the servo where the sonar is mounted
  
 /* pin definitions  */
 //  Ultrasounds
@@ -35,8 +37,8 @@ Servo servo;
  * Setup : preparing the Arduino pins    
  * ========================================================================*/
 void setup() {
-  // ultasons
-  //Serial.begin (9600);   // if we had a LCD screen for Aduino 
+  // ultrasons
+
   pinMode(trigPin, OUTPUT);
   pinMode(echoPin, INPUT);
   pinMode(Led1, OUTPUT);
@@ -52,6 +54,8 @@ void setup() {
 
   // servo for sonar: 
   servo.attach(9);  // servo input attached on pin 9 
+ 
+   //Serial.begin (9600);   // if we had a LCD screen for Aduino 
 }
 /*======================================================================
  *  ultrasonic detection of distance
@@ -94,6 +98,18 @@ int isObstacleAtDist(float distance, float distDetect){
         return LOW ;
 }
 
+
+void SonarLedDisplay(long distance, int Led[3]){
+   
+   valLed1 = isObstacleAtDist(distance, 100) ;
+   valLed2 = isObstacleAtDist(distance, 50) ;
+   valLed3 = isObstacleAtDist(distance, 20) ;
+   digitalWrite(Led[0],valLed1); 
+   digitalWrite(Led[1],valLed2); 
+   digitalWrite(Led[2],valLed3);
+}
+
+
 /* ================================================================
  *   Infrared Sensor:  obstacle detection
  * 
@@ -110,55 +126,37 @@ bool IRsensor(int IRpin, int Led){
     return isObstacle   ; 
 }
 
-
-/* ================================================================
- * Servo-motor: alternately turns Left and Right along a half rotation
- * Half rotation :  from 0 to 180 degrees       
- *  (Would be better to develop specific fcts for a special class of servo dedicated to sonar)
- * ================================================================ */
-void servoLeftRight(int theta0=0, int theta1=180, int tt=2 )
-// tt inverse of the rotation velocity: in  " number of second  for of a half-rotation"
-// default  2s , approx:  1800 ms/180 = 10 ms /degree  >  1.5 ms/degree   
-// typically, ultrasounds travel 1m during 100 cm/( 66 cm/ms) = 1.5 ms
-// It means 300 ms/(half-rotation) would already be fast enough to scan every degrees 
-{
-  if (angle ==theta0 || angle ==theta1 )
-             sgn *=-1;
-  angle  +=sgn;  // +1 or -1 
-  servo.write(angle); 
-  // save angle in an array                
-  delay(tt);   
-   
-/********************  on pourrait utiliser un pointeur sur un array de donnees  pour enregistrer ****************/
-   
-} 
-
+/* ===============================================================
+ *  dataAcquisition
+ * ===============================================================*/
+void dataAcquisition(long distanceSonar, int tooCloseIR[] ){
+ 
+}
 /* ==============================================================
 *   Main loop 
 *   
 *  ==============================================================*/
 void loop() {
-   long distance;
+   long distanceSonar
+   int tooCloseIR1, tooCloseIR2 ;
    int valLed1,valLed2,valLed3 ; 
+   int tooCloseIR[];    
 
    
    // Servo alternately, turns left and turns right from theta0 to theta1 
    // while sonar and IR sensors are active 
-   servoLeftRight( ) ; //  0 to 180 deg with 2 sec/deg
+   servoLeftRight( ) ; // In servoRotation class, in the files : servoRotation.h and servoRotation.cpp
    
    //  Sonar : 
    distance = sonarDistance() ; 
+   SonarLedDisplay(distance) ;
 
-   valLed1 = isObstacleAtDist(distance, 100) ;
-   valLed2 = isObstacleAtDist(distance, 50) ;
-   valLed3 = isObstacleAtDist(distance, 20) ;
-   digitalWrite(Led1,valLed1); 
-   digitalWrite(Led2,valLed2); 
-   digitalWrite(Led3,valLed3); 
-
-   // IR sensors 
-   IRsensor(IRpin1, Led1);
-   IRsensor(IRpin2, Led2);
-
+   // IR sensors :
+   tooCloseIR1  = IRsensor(IRpin1, Led1);
+   tooCloseIR2 = IRsensor(IRpin2, Led2);
+   tooCloseIR ={tooCloseIR1, tooCloseIR2};
+    
+   //  data acquisition in real time: to be done.. 
+   dataAcquisition(distanceSonar, tooCloseIR)  ; 
    
 } 
