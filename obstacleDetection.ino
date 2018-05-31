@@ -5,14 +5,17 @@
  #include <Servo.h>
 
  #include "servoRotation.h" // for motion of the servo where the sonar is mounted
- 
+
+//'average' ultrasound velocity in air: 330 m/s , ( Actually it is varying with temperature and humidity )
+#define soundVelocity 33  //  cm/ms   
+
 /* pin definitions  */
 //  Ultrasounds
-#define trigPin 13
+#define trigPin 13       
 #define echoPin 12
-#define Led1 4  //  far detection
-#define Led2 3
-#define Led3 2 // close detection 
+#define Led1 4           //  far detection
+#define Led2 3           // middle distance detection
+#define Led3 2           // close detection 
 
 // IR sensor1
 #define Led1 11 
@@ -28,8 +31,8 @@
  * ========================================================================*/
 
 // non-constant variables defined before main loop
-int angle =90;
-int sgn =1;
+uint8_t angle =90;
+uint8_t sgn =1;
 // Servo object: But would be better to define a special sonar class if special functions are to be added)
 Servo servo;  
 
@@ -68,8 +71,8 @@ void setup() {
  *  http://www.vaultrasound.com/wp-content/uploads/2012/03/Propagation-Velocity-Chart.png
  ======================================================================= */
  
-float sonarDistance() {
-    // returns distance from obstacle in cm
+long sonarDistance() {
+    // returns distance from obstacle in  cm  (rounded)
     long duration, distance;
 
     // a 2 MICROsec pulse  
@@ -79,19 +82,20 @@ float sonarDistance() {
     delayMicroseconds(10);
     digitalWrite(trigPin, LOW);
 
-    // collect the echo and convert it into a distance   ???? POURTANT CA MARCHAIT COMME DANS LE CODE D"ORIGINE.... 
-    duration = pulseIn(echoPin, HIGH);
-    distance = (duration/2) * 33;// 330 m/s = 33 cm/ms  is the 'average' ultrasound velocity in air. Actually it is varying.
-    return distance;
+    // collect the echo and convert it into a distance 
+    duration = pulseIn(echoPin, HIGH); // [ms]
+
+    distance = (duration/2)*soundVelocity; // [ms]*[cm/ms]
     // typically, when distance = 1m = 100 cm, duration = 100 cm/( 66 cm/ms) = 1.5 ms
+    return distance;
 }
 
 
-int isObstacleAtDist(float distance, float distDetect){  
+uint8_t isObstacleAtDist(long distance, long distDetect){  
     // returns HIGH whether there is an obstacle at less than the distance determined by distDetect 
-    //  and LOW otherwise
+    // and LOW otherwise
     
-    //  HIGH and LOW are predefined int constants
+    //  HIGH and LOW are predefined constants ( HIGH =1 and LOW=0 )
     if (distance < distDetect)
         return HIGH  ;  
     else  
@@ -99,7 +103,7 @@ int isObstacleAtDist(float distance, float distDetect){
 }
 
 
-void SonarLedDisplay(long distance, int Led[3]){
+void SonarLedDisplay(long distance, uint8_t Led[3]){
    
    valLed1 = isObstacleAtDist(distance, 100) ;
    valLed2 = isObstacleAtDist(distance, 50) ;
@@ -115,7 +119,7 @@ void SonarLedDisplay(long distance, int Led[3]){
  * 
  * ================================================================ */
 
-bool IRsensor(int IRpin, int Led){
+bool IRsensor(uint8_t IRpin, uint8_t Led){
     bool isObstacle = false ;
     if (digitalRead(IRpin) == HIGH){
         digitalWrite (Led, LOW);
@@ -123,24 +127,26 @@ bool IRsensor(int IRpin, int Led){
     }
     else
        digitalWrite (Led, HIGH);
+       
     return isObstacle   ; 
 }
 
 /* ===============================================================
- *  dataAcquisition
+ *  dataAcquisition   TO DO
  * ===============================================================*/
-void dataAcquisition(long distanceSonar, int tooCloseIR[] ){
- 
+void dataAcquisition(long distanceSonar, uint8_t tooCloseIR[] ){
+    return void;  
 }
 /* ==============================================================
 *   Main loop 
 *   
 *  ==============================================================*/
 void loop() {
-   long distanceSonar
-   int tooCloseIR1, tooCloseIR2 ;
-   int valLed1,valLed2,valLed3 ; 
-   int tooCloseIR[];    
+   long distanceSonar;   // 32 bits
+   bool tooCloseIR1, tooCloseIR2 ; //8 bits 
+   bool tooCloseIR[2];    
+   uint8_t valLed1,valLed2,valLed3 ;  // 8 bits 
+
 
    
    // Servo alternately, turns left and turns right from theta0 to theta1 
@@ -152,8 +158,8 @@ void loop() {
    SonarLedDisplay(distance) ;
 
    // IR sensors :
-   tooCloseIR1  = IRsensor(IRpin1, Led1);
-   tooCloseIR2 = IRsensor(IRpin2, Led2);
+   tooCloseIR1  = IRsensor(IRpin1, Led1);   // IRpin1, Led1 are globally defined
+   tooCloseIR2  = IRsensor(IRpin1, Led1);   // IRpin1, Led1 are globally defined
    tooCloseIR ={tooCloseIR1, tooCloseIR2};
     
    //  data acquisition in real time: to be done.. 
