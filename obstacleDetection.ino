@@ -131,12 +131,7 @@ bool IRsensor(uint8_t IRpin, uint8_t Led){
     return isObstacle   ; 
 }
 
-/* ===============================================================
- *  dataAcquisition   TO DO
- * ===============================================================*/
-void dataAcquisition(long distanceSonar, uint8_t tooCloseIR[] ){
-    return void;  
-}
+
 /* ==============================================================
 *   Main loop 
 *   
@@ -161,8 +156,6 @@ void loop() {
    tooCloseIR1  = IRsensor(IRpin1, Led1);   // IRpin1, Led1 are globally defined
    tooCloseIR2  = IRsensor(IRpin1, Led1);   // IRpin1, Led1 are globally defined
    tooCloseIR ={tooCloseIR1, tooCloseIR2};
-    
-   //  data acquisition in real time: to be done.. 
-   dataAcquisition(distanceSonar, tooCloseIR)  ; 
+   
    
 } 
